@@ -1,0 +1,32 @@
+services:
+  ib-gateway:
+    image: ghcr.io/gnzsnz/ib-gateway:stable
+    restart: always
+    environment:
+      TWS_USERID: ${TWS_USERID}
+      TWS_PASSWORD: ${TWS_PASSWORD}
+      TRADING_MODE: paper
+      READ_ONLY_API: "yes"
+      TWOFA_TIMEOUT_ACTION: restart
+      BYPASS_WARNING: "yes"
+      AUTO_RESTART_TIME: "05:00 AM"
+      TIME_ZONE: Europe/Warsaw
+      TZ: Europe/Warsaw
+    # Bez sekcji ports: API dostępne tylko wewnątrz sieci compose (paper: ib-gateway:4004)
+
+  app:
+    build: ./app
+    restart: always
+    depends_on:
+      - ib-gateway
+    environment:
+      TZ: Europe/Warsaw
+      IB_HOST: ib-gateway
+      IB_PORT: "4004"
+      CRON: "0 22 * * *"
+      GOOGLE_SHEET_ID: ${GOOGLE_SHEET_ID}
+      GOOGLE_SA_B64: ${GOOGLE_SA_B64}
+      FLEX_TOKEN: ${FLEX_TOKEN:-}
+      FLEX_QUERY_ID: ${FLEX_QUERY_ID:-}
+      FLEX_MODE: ${FLEX_MODE:-replace}
+      RUN_NOW: ${RUN_NOW:-0}
